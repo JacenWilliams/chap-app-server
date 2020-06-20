@@ -4,54 +4,25 @@ const express = require('express');
 let app = express();
 
 const parser = require('body-parser');
-const { default: TokenManager } = require('./DataAccessors/TokenManager');
+
+const TokenManager = require('./DataAccessors/TokenManager');
+const tokenManager = new TokenManager();
 app.use(parser.json());
 
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
-const da = require("./DataAccessors/ChatDa");
-const tokenManager = new TokenManager();
-let port = process.env.PORT || 3000;
 
-app.post('/login', (req, res) => {
-    let user = da.login(req.body);
+const users = require('./Routers/users');
+const chats = require('./Routers/chats');
+app.use('/users', users);
+app.use('/chats', chats)
 
-    if (user) {
-        res.json({
-            userId: user.userId,
-            userName: user.userName,
-            token: tokenManager.create(user)
-        });
-    } else {
-        res.sendStatus(401);
-    }
-});
+const port = process.env.PORT || 3000;
 
-app.post('/signup', (req, res) => {
-    let user = {
-        userName = req.body.username,
-        password = req.body.password
-    };
-
-    let userId = da.signup(user);
-
-    if (userId) {
-        res.json({
-            userId: userId,
-            userName: user.userName,
-            token: tokenManager.create({
-                userId: userId,
-                userName: user.userName
-            })
-        });
-    } else {
-        res.sendStatus(400);
-    }
-});
 
 io.use((socket, next) => {
     if (socket.handshake.query && socket.handshake.query.token) {
-        let user = TokenManager.validate(socket.handshake.query.token);
+        const user = tokenManager.validate(socket.handshake.query.token);
 
         if (user) {
             socket.user = user;
@@ -62,7 +33,7 @@ io.use((socket, next) => {
     }
 })
     .on('connection', function (socket) {
-        let initialChats = da.getLastMessages(100);
+        const initialChats = da.getLastMessages(100);
 
         socket.emit('initialize', initialChats);
 
