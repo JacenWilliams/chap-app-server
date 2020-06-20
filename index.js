@@ -4,10 +4,13 @@ const express = require('express');
 let app = express();
 
 const parser = require('body-parser');
+app.use(parser.json());
 
 const TokenManager = require('./DataAccessors/TokenManager');
 const tokenManager = new TokenManager();
-app.use(parser.json());
+
+const ChatDa = require('./DataAccessors/ChatDa');
+const chatDa = new ChatDa();
 
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
@@ -20,9 +23,9 @@ app.use('/chats', chats)
 const port = process.env.PORT || 3000;
 
 
-io.use((socket, next) => {
+io.use(async (socket, next) => {
     if (socket.handshake.query && socket.handshake.query.token) {
-        const user = tokenManager.validate(socket.handshake.query.token);
+        const user = await tokenManager.validate(socket.handshake.query.token);
 
         if (user) {
             socket.user = user;
@@ -32,19 +35,23 @@ io.use((socket, next) => {
         }
     }
 })
-    .on('connection', function (socket) {
-        const initialChats = da.getLastMessages(100);
+    .on('connection', async function (socket) {
+        const initialChats = await chatDa.getLastMessages(100);
 
         socket.emit('initialize', initialChats);
 
-        socket.on('message', function (msg) {
+        socket.on('message', async function (msg) {
 
-            let message = da.saveMessage(msg, socket.user.userId);
+            let messageId = await chatDa.saveMessage(msg, socket.user.userId);
 
-            if (message)
-                io.emit('message', message);
+            let savedMessage = await chatDa.getMessage(messageId);
+
+            if (savedMessage)
+                io.emit('message', savedMessage);
         })
     });
+
+app.set('socketio', io);
 
 http.listen(port, function () {
     console.log('listening on port: ' + port);

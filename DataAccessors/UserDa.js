@@ -39,18 +39,18 @@ class UserDa {
 
         let verified = await bcrypt.compare(pass, result.UserPassword);
 
-        if (verified) {
-            let userObj = {
-                userId: result.Id,
-                userName: result.UserName
-            }
+        let userId = result.Id;
+        let username = result.UserName;
 
-            let token = tokenManager.create(userObj);
+        console.log(JSON.stringify({ userId, username }));
+
+        if (verified) {
+            let token = tokenManager.create(userId, username);
 
             return {
-                userId: userObj.userId,
-                userName: userObj.userName,
-                token: token
+                userId,
+                username,
+                token
             };
         } else {
             return null;

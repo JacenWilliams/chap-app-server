@@ -8,26 +8,14 @@ async function protectedRoute(req, res, next) {
         var header = req.headers.authorization;
         if (header && header.split(' ')[0] === 'Bearer') {
             const token = req.headers.authorization.split(' ')[1];
-            const user = tokenManager.validate(token);
+            const user = await tokenManager.validate(token);
 
             if (!user) {
                 res.sendStatus(401);
                 return;
             }
 
-            console.log(JSON.stringify(user));
-
-            const userId = await userDa.getUserId(user.username);
-
-            if (!userId) {
-                res.sendStatus(401);
-                return;
-            }
-
-            req.username = user.username;
-            req.userId = userId;
-
-            console.log(JSON.stringify({ username: user.username, userId: userId }));
+            req.user = user;
             next();
         }
         else {

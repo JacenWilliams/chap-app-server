@@ -3,14 +3,8 @@ class TokenManager {
         this.jsonwebtoken = require('jsonwebtoken');
     }
 
-    create(user) {
-        let token = this.jsonwebtoken.sign({
-            userId: user.id,
-            userName: user.username
-        },
-            process.env.JWT_SECRET);
-
-        return token;
+    create(userId, username) {
+        return this.jsonwebtoken.sign({ userId, username }, process.env.JWT_SECRET);
     }
 
     async validate(token) {

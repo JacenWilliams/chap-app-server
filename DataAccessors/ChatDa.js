@@ -37,18 +37,15 @@ class ChatDa {
         let [results, fields] = await conn.query(sql, [userId, msg]);
         await conn.end();
 
-        return {
-            userName: username,
-            userId: results.insertId
-        };
+        return results.insertId;
     }
 
     async getLastMessages(qty) {
         const sql =
             "   SELECT  c.Id,           " +
             "           c.PostedTimeStamp,    " +
-            "           c.Message       " +
-            "           u.UserName      " +
+            "           c.Message,       " +
+            "           u.UserName,      " +
             "           c.UserId        " +
             "   FROM    chats c         " +
             "   JOIN    users u         " +
@@ -59,21 +56,23 @@ class ChatDa {
         let [results, fields] = await conn.query(sql, [qty]);
         await conn.end();
 
-        return results.map(row => new {
-            id: row.Id,
-            postedTimeStamp: row.PostedTimeStamp,
-            message: row.Message,
-            userName: row.UserName,
-            userId: row.UserId
+        return results.map(row => {
+            return {
+                id: row.Id,
+                postedTimeStamp: row.PostedTimeStamp,
+                message: row.Message,
+                userName: row.UserName,
+                userId: row.UserId
+            }
         });
     }
 
     async getMessage(messageId) {
         const sql =
             "   SELECT  c.Id,           " +
-            "           c.TimeStamp,    " +
-            "           c.Message       " +
-            "           u.UserName      " +
+            "           c.PostedTimeStamp,    " +
+            "           c.Message,      " +
+            "           u.UserName,     " +
             "           c.UserId        " +
             "   FROM    chats c         " +
             "   JOIN    users u         " +
@@ -92,13 +91,15 @@ class ChatDa {
             return null;
         }
 
-        return results.map(row => new {
-            id: row.Id,
-            timeStamp: row.TimeStamp,
-            message: row.Message,
-            userName: row.UserName,
-            userId: row.UserId
-        }).last();
+        let result = results[0];
+
+        return {
+            id: result.Id,
+            timeStamp: result.PostedTimeStamp,
+            message: result.Message,
+            userName: result.UserName,
+            userId: result.UserId
+        }
     }
 }
 
