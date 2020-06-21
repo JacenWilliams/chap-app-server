@@ -9,7 +9,8 @@ class ChatDa {
             host: process.env.DB_HOST,
             user: process.env.DB_USER,
             database: process.env.DB_DATABASE,
-            password: process.env.DB_PASS
+            password: process.env.DB_PASS,
+
         };
     }
 
@@ -24,7 +25,7 @@ class ChatDa {
         let [results, fields] = await conn.query(sql);
         await conn.end();
 
-        return results;
+        return results.map;
     }
 
     async saveMessage(msg, userId) {
@@ -59,9 +60,9 @@ class ChatDa {
         return results.map(row => {
             return {
                 id: row.Id,
-                postedTimeStamp: row.PostedTimeStamp,
+                postedTimeStamp: new Date(row.PostedTimeStamp),
                 message: row.Message,
-                userName: row.UserName,
+                username: row.UserName,
                 userId: row.UserId
             }
         });
@@ -95,9 +96,9 @@ class ChatDa {
 
         return {
             id: result.Id,
-            timeStamp: result.PostedTimeStamp,
+            postedTimeStamp: new Date(result.PostedTimeStamp),
             message: result.Message,
-            userName: result.UserName,
+            username: result.UserName,
             userId: result.UserId
         }
     }

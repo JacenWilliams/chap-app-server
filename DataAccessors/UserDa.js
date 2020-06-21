@@ -63,7 +63,6 @@ class UserDa {
             "                          UserPassword)" +
             "   VALUES          (?, ?);             ";
 
-        console.log({ username, password });
         const hash = await bcrypt.hash(password, 10);
 
         let conn = await mysql.createConnection(this.dbOptions);

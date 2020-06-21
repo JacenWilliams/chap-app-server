@@ -2,6 +2,8 @@ const UserDa = require('../DataAccessors/UserDa');
 const express = require('express');
 const router = express.Router();
 const da = new UserDa();
+const TokenManager = require('../DataAccessors/TokenManager');
+const tokenManager = new TokenManager();
 
 router.post('/signup', async (req, res) => {
     try {
@@ -15,11 +17,12 @@ router.post('/signup', async (req, res) => {
         }
 
         let userId = await da.signUp(username, password);
+        let token = tokenManager.create(userId, username);
 
         res.json({
             userId: userId,
             username: username,
-            token
+            token: token
         });
     }
     catch (err) {
