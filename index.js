@@ -6,6 +6,9 @@ let app = express();
 const parser = require('body-parser');
 app.use(parser.json());
 
+const cors = require('cors');
+app.use(cors());
+
 const TokenManager = require('./DataAccessors/TokenManager');
 const tokenManager = new TokenManager();
 
